@@ -58,11 +58,6 @@ jobs:
 
       - name: Alinear y firmar APK
         id: sign
-        env:
-          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
           BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
@@ -70,31 +65,22 @@ jobs:
           UNSIGNED="$(ls "$OUT_DIR"/*.apk | head -n1)"
           FINAL="$RUNNER_TEMP/app-v${{ steps.ver.outputs.version }}.apk"
 
-          # Reconstruir el keystore (ignora espacios, saltos de línea y comillas)
-          printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]"' | base64 -d > "$RUNNER_TEMP/release.jks"
-
-          # Validar keystore antes de firmar (da un error claro si algo no cuadra)
-          ls -l "$RUNNER_TEMP/release.jks"
-          keytool -list -keystore "$RUNNER_TEMP/release.jks" \
-            -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-
           "$BT/zipalign" -f -p 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" sign \
-            --ks "$RUNNER_TEMP/release.jks" \
-            --ks-key-alias "$KEY_ALIAS" \
-            --ks-pass env:KEYSTORE_PASSWORD \
-            --key-pass env:KEY_PASSWORD \
+            --ks signing/release.jks \
+            --ks-key-alias release \
+            --ks-pass pass:android \
+            --key-pass pass:android \
             --out "$FINAL" "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" verify --verbose "$FINAL"
 
-          rm -f "$RUNNER_TEMP/release.jks"
           echo "apk=$FINAL" >> "$GITHUB_OUTPUT"
 
       - name: Commit + tag de la versión
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain)" ]]; then
+          if [[ -n "$(git status --porcelain -- package.json pnpm-lock.yaml 'packages/*/package.json' packages/shared/src/constants/config.ts)" ]]; then
             git add package.json pnpm-lock.yaml packages/*/package.json packages/shared/src/constants/config.ts
             git commit -m "chore: release v${{ steps.ver.outputs.version }}"
             git push origin HEAD
