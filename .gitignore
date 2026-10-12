@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.local
+
+# Proyectos nativos generados por Capacitor
+packages/mobile/android/
+packages/mobile/ios/

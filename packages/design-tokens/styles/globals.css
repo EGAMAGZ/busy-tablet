@@ -1,0 +1,102 @@
+:root {
+  --base: 0 0 0;
+  --panel: 10 10 10;
+  --ink: 255 255 255;
+  --muted: 127 127 127;
+  --line: 36 36 36;
+  --accent: 215 0 0;
+  --font-display: 'Doto', 'Geist Mono', ui-monospace, monospace;
+  --font-body: 'Inter', system-ui, sans-serif;
+}
+
+:root.light {
+  --base: 255 255 255;
+  --panel: 245 245 245;
+  --ink: 10 10 10;
+  --muted: 89 89 89;
+  --line: 208 208 208;
+  --accent: 215 0 0;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: rgb(var(--base));
+  color: rgb(var(--ink));
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+/* Dot-matrix display type: numbers, times, titles, metrics. */
+.font-display {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* A dot field for "grid & geometry" surfaces (cockpit, custom, widgets). */
+.dot-grid {
+  background-image: radial-gradient(rgb(var(--line)) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@keyframes dot-flicker {
+  0%, 44%, 46%, 92%, 94%, 100% { opacity: 1; }
+  45% { opacity: 0.68; }
+  93% { opacity: 0.82; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+@keyframes flash-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes accent-flash {
+  0%, 100% { opacity: 0; }
+  12%, 40% { opacity: 0.9; }
+  60% { opacity: 0.3; }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Microinteractions. Non-layered so Tailwind's purge never drops them. */
+.anim-flicker { animation: dot-flicker 5s steps(1, end) infinite; }
+.anim-pulse { animation: pulse-dot 1.6s ease-in-out infinite; }
+.anim-rise { animation: rise 0.35s ease-out both; }
+.anim-flash { animation: accent-flash 0.9s ease-out; }
+.anim-spin { animation: ring-spin 2.4s linear infinite; }
+
+.sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgb(var(--accent)), transparent);
+  animation: flash-sweep 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-flicker,
+  .anim-pulse,
+  .anim-rise,
+  .anim-flash,
+  .anim-spin,
+  .sweep::after {
+    animation: none !important;
+  }
+}

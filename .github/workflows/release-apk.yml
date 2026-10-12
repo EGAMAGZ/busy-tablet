@@ -1,0 +1,77 @@
+name: Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión de la release (semver, ej. 1.2.3)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Normalizar versión (sin prefijo v)
+        id: ver
+        run: echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
+        env:
+          VERSION: ${{ inputs.version }}
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Instalar plataforma Android
+        run: pnpm -C packages/mobile add @capacitor/android@^6.0.0
+
+      - name: Generar proyecto Android
+        run: pnpm -C packages/mobile exec cap add android
+
+      - name: Aplicar versión al código (package.json + APP_VERSION + build.gradle)
+        run: node scripts/set-version.mjs "${{ inputs.version }}"
+
+      - name: Build web + sync Capacitor
+        run: |
+          pnpm build:mobile
+          pnpm -C packages/mobile exec cap sync android
+
+      - name: Compilar APK release
+        working-directory: packages/mobile/android
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Commit + tag de la versión
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package.json pnpm-lock.yaml packages/*/package.json packages/shared/src/constants/config.ts
+            git commit -m "chore: release v${{ steps.ver.outputs.version }}"
+            git push origin HEAD
+            git tag "v${{ steps.ver.outputs.version }}"
+            git push origin "v${{ steps.ver.outputs.version }}"
+          fi
+
+      - name: Crear release con el APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: v${{ steps.ver.outputs.version }}
+          files: packages/mobile/android/app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
