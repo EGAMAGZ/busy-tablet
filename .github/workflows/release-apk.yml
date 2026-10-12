@@ -64,16 +64,26 @@ jobs:
           OUT_DIR=packages/mobile/android/app/build/outputs/apk/release
           UNSIGNED="$(ls "$OUT_DIR"/*.apk | head -n1)"
           FINAL="$RUNNER_TEMP/app-v${{ steps.ver.outputs.version }}.apk"
+          KS="$RUNNER_TEMP/release.jks"
+
+          # ponytail: keystore efímero autogenerado (uso personal). Cada release
+          # cambia la firma -> no se puede actualizar sobre una instalación previa
+          # sin desinstalar. Si algún día importa: usa un jks estable en secrets.
+          keytool -genkeypair -v -keystore "$KS" -alias release \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android -keypass android \
+            -dname "CN=BUSY Bar, OU=Dev, O=BUSY, C=NA"
 
           "$BT/zipalign" -f -p 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" sign \
-            --ks signing/release.jks \
+            --ks "$KS" \
             --ks-key-alias release \
             --ks-pass pass:android \
             --key-pass pass:android \
             --out "$FINAL" "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" verify --verbose "$FINAL"
 
+          rm -f "$KS"
           echo "apk=$FINAL" >> "$GITHUB_OUTPUT"
 
       - name: Commit + tag de la versión

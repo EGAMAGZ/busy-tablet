@@ -2,6 +2,10 @@ node_modules/
 dist/
 *.local
 
+# Keystores
+*.jks
+*.keystore
+
 # Proyectos nativos generados por Capacitor
 packages/mobile/android/
 packages/mobile/ios/
