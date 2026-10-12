@@ -8,3 +8,4 @@ export const CUSTOM_PATTERN_KEY = 'busy.custom.pattern';
 
 export const APP_ID = 'com.busybar.app';
 export const APP_NAME = 'BUSY Bar';
+export const APP_VERSION = '26.10.1';

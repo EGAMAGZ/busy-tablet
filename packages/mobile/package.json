@@ -1,6 +1,6 @@
 {
   "name": "@busy-bar/mobile",
-  "version": "1.0.0",
+  "version": "26.10.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,6 +15,7 @@
   "dependencies": {
     "@busy-bar/design-tokens": "workspace:*",
     "@busy-bar/shared": "workspace:*",
+    "@capacitor/android": "^6.2.2",
     "@capacitor/app": "^6.0.2",
     "@capacitor/core": "^6.2.0",
     "@capacitor/device": "^6.0.2",
