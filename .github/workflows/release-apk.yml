@@ -70,7 +70,13 @@ jobs:
           UNSIGNED="$(ls "$OUT_DIR"/*.apk | head -n1)"
           FINAL="$RUNNER_TEMP/app-v${{ steps.ver.outputs.version }}.apk"
 
-          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          # Reconstruir el keystore (ignora espacios, saltos de línea y comillas)
+          printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]"' | base64 -d > "$RUNNER_TEMP/release.jks"
+
+          # Validar keystore antes de firmar (da un error claro si algo no cuadra)
+          ls -l "$RUNNER_TEMP/release.jks"
+          keytool -list -keystore "$RUNNER_TEMP/release.jks" \
+            -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
 
           "$BT/zipalign" -f -p 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" sign \
