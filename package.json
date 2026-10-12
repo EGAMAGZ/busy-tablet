@@ -1,21 +1,24 @@
 {
   "name": "busy-tablet",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "12.11.2",
-      "onFail": "download"
-    }
-  },
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
   "packageManager": "pnpm@12.11.2",
-  "type": "module"
+  "description": "BUSY Bar - focus timer multi-platform (Preact + Ionic + Capacitor)",
+  "scripts": {
+    "dev:web": "pnpm -C packages/web dev",
+    "dev:mobile": "pnpm -C packages/mobile dev",
+    "build:all": "pnpm -r build",
+    "build:web": "pnpm -C packages/web build",
+    "build:mobile": "pnpm -C packages/mobile build",
+    "build:ios": "pnpm -C packages/mobile build:ios",
+    "build:android": "pnpm -C packages/mobile build:android",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint packages --max-warnings=0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "eslint": "^9.14.0",
+    "typescript-eslint": "^8.13.0"
+  }
 }

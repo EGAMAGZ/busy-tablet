@@ -1,0 +1,6 @@
+{
+  "name": "BUSY Bar",
+  "integrations": { "capacitor": {} },
+  "type": "custom",
+  "webDir": "dist"
+}

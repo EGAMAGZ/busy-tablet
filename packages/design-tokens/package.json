@@ -1,0 +1,11 @@
+{
+  "name": "@busy-bar/design-tokens",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./tailwind.config": "./tailwind.config.js",
+    "./globals.css": "./styles/globals.css",
+    "./nothing.css": "./styles/nothing.css"
+  }
+}

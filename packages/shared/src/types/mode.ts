@@ -1,0 +1,1 @@
+export type AppView = 'busy' | 'custom' | 'stats' | 'settings';
